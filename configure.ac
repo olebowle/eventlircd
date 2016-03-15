@@ -99,10 +99,28 @@ AC_SUBST(ABSOLUTE_LINUX_INPUT_H, $gl_cv_absolute_linux_input_h)
 
 PKG_CHECK_MODULES(LIBUDEV, [libudev >= 136])
 
+PKG_CHECK_MODULES([SYSTEMD],
+    [libsystemd >= 209],
+    [SYSTEMD_DIR="systemd"],
+    [PKG_CHECK_MODULES([SYSTEMD],
+        [libsystemd-login >= 32, libsystemd-daemon >= 32, libsystemd-journal >= 32],
+        [SYSTEMD_DIR="systemd"],
+        [SYSTEMD_DIR=""])])
+AC_SUBST(SYSTEMD_DIR)
+
+if test "x$SYSTEMD_DIR" = "xsystemd"; then
+    SYSTEMD_SYSTEM_UNIT_DIR=$(pkg-config --variable=systemdsystemunitdir systemd)
+    TMPFILES_DIR=$(pkg-config --variable=tmpfilesdir systemd)
+    AC_SUBST(SYSTEMD_SYSTEM_UNIT_DIR)
+    AC_SUBST(TMPFILES_DIR)
+fi
+
 AC_ARG_WITH(lircd-socket, AS_HELP_STRING([--with-lircd-socket=SOCKET], [lircd socket @<:@LOCALSTATEDIR/run/lirc/lircd@:>@]),
     [LIRCD_SOCKET="$withval"],
     [LIRCD_SOCKET="${localstatedir}/run/lirc/lircd"])
 AC_SUBST(LIRCD_SOCKET)
+LIRCD_SOCKET_DIR=$(dirname "$LIRCD_SOCKET")
+AC_SUBST(LIRCD_SOCKET_DIR)
 
 AC_ARG_WITH(evmap-dir, AS_HELP_STRING([--with-evmap-dir=DIR], [event map directory @<:@SYSCONFDIR/eventlircd.d@:>@]),
     [EVMAP_DIR="$withval"],
@@ -143,5 +161,5 @@ AX_LD_CHECK_FLAG([-fvisibility=hidden],[],[],[LDFLAGS="$LDFLAGS -fvisibility=hid
 AX_LD_CHECK_FLAG([-Wl,--as-needed],[],[],[LDFLAGS="$LDFLAGS -Wl,--as-needed"],[])
 
 AC_CONFIG_HEADERS([src/config.h])
-AC_CONFIG_FILES([Makefile etc/Makefile man/Makefile man/eventlircd.8 man/eventlircd.evmap.5 src/Makefile src/event_name_to_code.h.sh src/evkey_code_to_name.h.sh src/evkey_type.h.sh udev/Makefile udev/lircd_helper udev/wakeup_enable udev/rules.d/98-lircd.rules.disabled udev/rules.d/98-eventlircd.rules.disabled])
+AC_CONFIG_FILES([Makefile etc/Makefile man/Makefile man/eventlircd.8 man/eventlircd.evmap.5 src/Makefile src/event_name_to_code.h.sh src/evkey_code_to_name.h.sh src/evkey_type.h.sh systemd/Makefile systemd/eventlircd.conf systemd/eventlircd.service udev/Makefile udev/lircd_helper udev/wakeup_enable udev/rules.d/98-lircd.rules.disabled udev/rules.d/98-eventlircd.rules.disabled])
 AC_OUTPUT

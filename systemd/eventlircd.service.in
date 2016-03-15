@@ -1,0 +1,8 @@
+[Unit]
+Description=Eventlirc Daemon
+
+[Service]
+ExecStart=@sbindir@/eventlircd -f --evmap=@EVMAP_DIR@ --socket=@LIRCD_SOCKET@
+
+[Install]
+WantedBy=multi-user.target
